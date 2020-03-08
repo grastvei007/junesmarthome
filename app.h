@@ -2,6 +2,7 @@
 #define APP_H
 
 #include <QApplication>
+#include <QTimer>
 #include "tplinksmartsocket.h"
 
 class App : public QApplication
@@ -12,10 +13,11 @@ public:
 
 signals:
 
-public slots:
-
+private slots:
+    void onPollTimerTimeout();
 private:
     TpLinkSmartSocket *mSmartSocket;
+    QTimer *mPollTimer;
 };
 
 #endif // APP_H

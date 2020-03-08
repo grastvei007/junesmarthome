@@ -1,6 +1,11 @@
 #include "tplinksmartsocket.h"
 #include <QNetworkAccessManager>
 #include <iostream>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+
+
 
 TpLinkSmartSocket::TpLinkSmartSocket(const QString &aIpAdress) : QObject(),
     mIpAdress(aIpAdress)
@@ -13,6 +18,15 @@ TpLinkSmartSocket::TpLinkSmartSocket(const QString &aIpAdress) : QObject(),
     connect(&mTcpSocket, &QTcpSocket::connected, this, &TpLinkSmartSocket::onConnected);
     connect(&mTcpSocket, &QTcpSocket::readyRead, this, &TpLinkSmartSocket::onDataReady);
     connect(&mTcpSocket, qOverload<QAbstractSocket::SocketError>(&QTcpSocket::error), this, &TpLinkSmartSocket::onError);
+}
+
+
+void TpLinkSmartSocket::poll()
+{
+    if(mIsRelayStateOn)
+        energy();
+    else
+        info();
 }
 
 
@@ -80,7 +94,7 @@ QString TpLinkSmartSocket::decrypt(const QByteArray &msg)
 void TpLinkSmartSocket::onConnected()
 {
     QByteArray cmd = mCommands[mCurrentCommand];
-    qDebug() << "Command: " << cmd;
+    //qDebug() << "Command: " << cmd;
     QByteArray byte = encrypt(cmd);
     mTcpSocket.write(byte);
     mTcpSocket.flush();
@@ -90,9 +104,76 @@ void TpLinkSmartSocket::onConnected()
 void TpLinkSmartSocket::onDataReady()
 {
     QByteArray data = mTcpSocket.readAll();
+    mTcpSocket.close();
     QString result = decrypt(data);
-    qDebug() << result;
+    //qDebug() << result;
+
+    QJsonDocument json = QJsonDocument::fromJson(result.toLatin1());
+    if(json.isObject())
+    {
+        QJsonObject object = json.object();
+        if(object.contains("system"))
+        {
+            parseSystemResponse(object);
+        }
+        else if(object.contains("emeter"))
+        {
+            parseEmeter(object);
+        }
+    }
+    else
+    {
+        qDebug() << "unknown respons: " << result;
+    }
 }
+
+
+void TpLinkSmartSocket::parseSystemResponse(const QJsonObject &system)
+{
+    QJsonValue value = system.value("system");
+    if(value.isObject())
+    {
+        QJsonObject obj = value.toObject();
+        if(obj.contains("get_sysinfo"))
+        {
+            QJsonValue systemInfo = obj.value("get_sysinfo");
+            if(systemInfo.isObject())
+            {
+                QJsonObject info = systemInfo.toObject();
+                if(mAlias.isEmpty())
+                {
+                    mAlias = info.value("alias").toString();
+                    createTags();
+                }
+                mIsRelayStateOn = info.value("relay_state").toInt() == 1 ? true : false;
+            }
+        }
+    }
+}
+
+
+void TpLinkSmartSocket::parseEmeter(const QJsonObject &emeter)
+{
+    QJsonValue value = emeter.value("emeter");
+    if(value.isObject())
+    {
+        QJsonObject emeterObject = value.toObject();
+        if(emeterObject.contains("get_realtime"))
+        {
+            QJsonValue realtimeValue = emeterObject.value("get_realtime");
+            if(realtimeValue.isObject())
+            {
+                QJsonObject realtime = realtimeValue.toObject();
+                mVoltage = realtime.value("voltage_mv").toInt();
+                mAmpere = realtime.value("current_ma").toInt();
+                mPower = realtime.value("power_mw").toInt();
+
+                qDebug() << mVoltage << "mV " << mAmpere << "mA " << mPower << "mW";
+            }
+        }
+    }
+}
+
 
 void TpLinkSmartSocket::onError(QAbstractSocket::SocketError socketError)
 {
@@ -103,4 +184,10 @@ void TpLinkSmartSocket::onError(QAbstractSocket::SocketError socketError)
 void TpLinkSmartSocket::connectToDevice()
 {
     mTcpSocket.connectToHost(mIpAdress, 9999);
+}
+
+
+void TpLinkSmartSocket::createTags()
+{
+
 }

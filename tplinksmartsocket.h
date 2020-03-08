@@ -15,6 +15,8 @@ class TpLinkSmartSocket : public QObject
 public:
     explicit TpLinkSmartSocket(const QString &aIpAdress);
 
+    void poll();
+
    //commands
     void info();
     void on();
@@ -31,6 +33,9 @@ private slots:
     void onError(QAbstractSocket::SocketError socketError);
 private:
     void connectToDevice();
+    void parseSystemResponse(const QJsonObject &system);
+    void parseEmeter(const QJsonObject &emeter);
+    void createTags();
     QByteArray encrypt(const QByteArray &str);
     QString decrypt(const QByteArray &msg);
 
@@ -39,6 +44,11 @@ private:
     QTcpSocket mTcpSocket;
     QString mIpAdress;
     QString mCurrentCommand;
+    QString mAlias;
+    bool mIsRelayStateOn = false;
+    int mVoltage; ///< mV
+    int mAmpere; ///< mA
+    int mPower; ///< mW
 };
 
 #endif // TPLINKSMARTSOCKET_H
