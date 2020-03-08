@@ -4,7 +4,7 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
-
+#include <tagsystem/taglist.h>
 
 
 TpLinkSmartSocket::TpLinkSmartSocket(const QString &aIpAdress) : QObject(),
@@ -146,6 +146,8 @@ void TpLinkSmartSocket::parseSystemResponse(const QJsonObject &system)
                     createTags();
                 }
                 mIsRelayStateOn = info.value("relay_state").toInt() == 1 ? true : false;
+                if(mRelayStateOnTag)
+                    mRelayStateOnTag->setValue(mIsRelayStateOn);
             }
         }
     }
@@ -168,6 +170,13 @@ void TpLinkSmartSocket::parseEmeter(const QJsonObject &emeter)
                 mAmpere = realtime.value("current_ma").toInt();
                 mPower = realtime.value("power_mw").toInt();
 
+                if(mVoltageTag)
+                    mVoltageTag->setValue(mVoltage);
+                if(mAmpereTag)
+                    mAmpereTag->setValue(mAmpere);
+                if(mPowerTag)
+                    mPowerTag->setValue(mPower);
+
                 qDebug() << mVoltage << "mV " << mAmpere << "mA " << mPower << "mW";
             }
         }
@@ -189,5 +198,24 @@ void TpLinkSmartSocket::connectToDevice()
 
 void TpLinkSmartSocket::createTags()
 {
-
+    if(!mVoltageTag)
+    {
+        mVoltageTag = TagList::sGetInstance().createTag(mAlias, "voltage", Tag::eInt);
+        mVoltageTag->setValue(mVoltage);
+    }
+    if(!mAmpereTag)
+    {
+        mAmpereTag = TagList::sGetInstance().createTag(mAlias, "amphere", Tag::eInt);
+        mAmpereTag->setValue(mAmpere);
+    }
+    if(!mPowerTag)
+    {
+        mPowerTag = TagList::sGetInstance().createTag(mAlias, "power", Tag::eInt);
+        mPowerTag->setValue(mPower);
+    }
+    if(!mRelayStateOnTag)
+    {
+        mRelayStateOnTag = TagList::sGetInstance().createTag(mAlias, "relayStateOn", Tag::eBool);
+        mRelayStateOnTag->setValue(mIsRelayStateOn);
+    }
 }

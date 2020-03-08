@@ -8,6 +8,7 @@
 #include <QTcpSocket>
 #include <QAbstractSocket>
 #include <QDebug>
+#include <tagsystem/tag.h>
 
 class TpLinkSmartSocket : public QObject
 {
@@ -49,6 +50,11 @@ private:
     int mVoltage; ///< mV
     int mAmpere; ///< mA
     int mPower; ///< mW
+
+    Tag *mVoltageTag = nullptr;
+    Tag *mAmpereTag = nullptr;
+    Tag *mPowerTag = nullptr;
+    Tag *mRelayStateOnTag = nullptr;
 };
 
 #endif // TPLINKSMARTSOCKET_H
