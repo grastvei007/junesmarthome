@@ -1,0 +1,13 @@
+#ifndef SMARTHOME_GLOBAL_H
+#define SMARTHOME_GLOBAL_H
+
+#include <QtCore/qglobal.h>
+
+#if defined(SMARTHOME_LIBRARY)
+#  define SMARTHOMESHARED_EXPORT Q_DECL_EXPORT
+#else
+#  define SMARTHOMESHARED_EXPORT Q_DECL_IMPORT
+#endif
+
+
+#endif // SMARTHOME_GLOBAL_H
