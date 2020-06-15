@@ -1,8 +1,9 @@
 #include "smarthome.h"
 
 #include "tplinkcloud.h"
+#include <tagsystem/taglist.h>
 
-SmartHome::SmartHome() : mUseWebService(false)
+SmartHome::SmartHome() : mUseWebService(false), mUseJuneServer(false)
 {
 
 }
@@ -10,6 +11,17 @@ SmartHome::SmartHome() : mUseWebService(false)
 void SmartHome::useWebservice(bool aUseWebService)
 {
     mUseWebService = aUseWebService;
+}
+
+void SmartHome::useJuneServer(bool aServer, const QString aClientName)
+{
+    mUseJuneServer = aServer;
+    mClientName = aClientName;
+    if(mUseJuneServer)
+    {
+        TagList::sGetInstance().setClientName(mClientName);
+        TagList::sGetInstance().connectToServer("localhost", 5000);
+    }
 }
 
 
@@ -30,6 +42,7 @@ void SmartHome::connect()
     if(mUseWebService)
     {
         mTpLinkCloud = new TpLinkCloud();
+        mTpLinkCloud->useJuneServer(mUseJuneServer);
         QObject::connect(mTpLinkCloud, &TpLinkCloud::deviceReady, this, &SmartHome::deviceReady);
         if(mTpLinkCloud->login(mUserName, mPassword))
             mTpLinkCloud->getDeviceList();

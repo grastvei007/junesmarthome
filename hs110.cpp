@@ -8,8 +8,11 @@
 #include <QJsonArray>
 #include <QApplication>
 
+#include <tagsystem/taglist.h>
+
 Hs110::Hs110(const QJsonObject& json, const QString &token) : mToken(token),
-    mPollPowerUsageTimer(nullptr)
+    mPollPowerUsageTimer(nullptr), mUseJuneServer(false),
+    mPowerTag(nullptr), mVoltageTag(nullptr), mAmphereTag(nullptr)
 {
     mNetworkAccessManager = new QNetworkAccessManager(this);
     //"alias":"coffeemaker","appServerUrl":"https://eu-wap.tplinkcloud.com",
@@ -119,13 +122,20 @@ void Hs110::onPowerUsageReply(QNetworkReply *reply)
                     QJsonObject emeter = responseDataObj.value("emeter").toObject();
                     QJsonObject realtime = emeter.value("get_realtime").toObject();
                     qDebug() << realtime;
-                    double voltage = realtime.value("voltage_mv").toInt();
-                    double amphere = realtime.value("current_ma").toInt();
-                    double power = realtime.value("power_mw").toInt();
+                    int voltage = realtime.value("voltage_mv").toInt();
+                    int amphere = realtime.value("current_ma").toInt();
+                    int power = realtime.value("power_mw").toInt();
 
                     qDebug() << voltage << "mV";
                     qDebug() << amphere << "mA";
                     qDebug() << power << "mW";
+
+                    if(mPowerTag)
+                        mPowerTag->setValue(power);
+                    if(mAmphereTag)
+                        mAmphereTag->setValue(amphere);
+                    if(mVoltageTag)
+                        mVoltageTag->setValue(voltage);
 
                     emit voltageReady(voltage);
                     emit amphereReady(amphere);
@@ -138,4 +148,16 @@ void Hs110::onPowerUsageReply(QNetworkReply *reply)
     }
     else
         qDebug() << "No object";
+}
+
+
+void Hs110::useJuneServer(bool aServer)
+{
+    mUseJuneServer = aServer;
+    if(mUseJuneServer)
+    {
+        mPowerTag = TagList::sGetInstance().createTag(mAlias, "mW", Tag::eInt);
+        mVoltageTag = TagList::sGetInstance().createTag(mAlias, "mV", Tag::eInt);
+        mAmphereTag = TagList::sGetInstance().createTag(mAlias, "mA", Tag::eInt);
+    }
 }

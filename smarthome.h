@@ -16,6 +16,7 @@ public:
     SmartHome();
     //webservice
     void useWebservice(bool aUseWebService);
+    void useJuneServer(bool aServer, const QString aClientName);
     void setUserName(const QString &aUserName);
     void setPassword(const QString &aPsw);
     void connect();
@@ -29,7 +30,9 @@ signals:
 private:
     QString mUserName;
     QString mPassword;
+    QString mClientName;
     bool mUseWebService;
+    bool mUseJuneServer;
 
     TpLinkCloud *mTpLinkCloud;
 };
