@@ -13,14 +13,14 @@ void SmartHome::useWebservice(bool aUseWebService)
     mUseWebService = aUseWebService;
 }
 
-void SmartHome::useJuneServer(bool aServer, const QString aClientName)
+void SmartHome::useJuneServer(const QString aIp, const QString aClientName)
 {
-    mUseJuneServer = aServer;
+    mUseJuneServer = true;
     mClientName = aClientName;
     if(mUseJuneServer)
     {
         TagList::sGetInstance().setClientName(mClientName);
-        TagList::sGetInstance().connectToServer("localhost", 5000);
+        TagList::sGetInstance().connectToServer(aIp, 5000);
     }
 }
 

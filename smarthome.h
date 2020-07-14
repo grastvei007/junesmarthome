@@ -16,7 +16,7 @@ public:
     SmartHome();
     //webservice
     void useWebservice(bool aUseWebService);
-    void useJuneServer(bool aServer, const QString aClientName);
+    void useJuneServer(const QString aIp, const QString aClientName);
     void setUserName(const QString &aUserName);
     void setPassword(const QString &aPsw);
     void connect();

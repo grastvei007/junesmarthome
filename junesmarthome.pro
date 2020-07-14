@@ -6,8 +6,13 @@ TEMPLATE = lib
 CONFIG += c++14
 DEFINES += SMARTHOME_LIBRARY
 
-release: TARGET = smarthome
-debug: TARGET = smarthomed
+
+if(debug){
+TARGET = smarthomed
+}
+else{
+TARGET = smarthome
+}
 
 DESTDIR = $$(DEV_LIBS)
 
@@ -40,14 +45,6 @@ else{
 }
 
 INCLUDEPATH += $$(JUNE_ROOT)
-
-if(debug){
-    LIBS += -L$$(DEV_LIBS) -ltagsystemd
-}
-else{
-    LIBS += -L$$(DEV_LIBS) -ltagsystem
-}
-
 
 
 
