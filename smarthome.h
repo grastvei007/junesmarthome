@@ -4,6 +4,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QStringList>
 
 #include "hs110.h"
 
@@ -25,12 +26,14 @@ public:
 
     //
     Hs110* getDevice(const QString &aDeviceName);
+    const QStringList& getDeviceList() const;
 signals:
     void deviceReady(QString);
 private:
     QString mUserName;
     QString mPassword;
     QString mClientName;
+    QStringList mDeviceNameList;
     bool mUseWebService;
     bool mUseJuneServer;
 

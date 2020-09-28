@@ -45,7 +45,9 @@ void SmartHome::connect()
         mTpLinkCloud->useJuneServer(mUseJuneServer);
         QObject::connect(mTpLinkCloud, &TpLinkCloud::deviceReady, this, &SmartHome::deviceReady);
         if(mTpLinkCloud->login(mUserName, mPassword))
-            mTpLinkCloud->getDeviceList();
+        {
+            mDeviceNameList = mTpLinkCloud->getDeviceList();
+        }
         else
             qDebug() << "Unable to connect to cloud";
     }
@@ -59,4 +61,9 @@ void SmartHome::connect()
 Hs110* SmartHome::getDevice(const QString &aDeviceName)
 {
     return mTpLinkCloud->getDevice(aDeviceName);
+}
+
+const QStringList &SmartHome::getDeviceList() const
+{
+    return mDeviceNameList;
 }
